@@ -91,7 +91,13 @@ class TensorSaveVideo:
         if tensor.shape[3] == 1:
             tensor = tensor.repeat(1, 1, 1, 3)  # repeat gray image to RGB image
 
-        if tensor.dtype in [torch.float16, torch.float, torch.float32, torch.float64]:
+        if tensor.dtype in [
+            torch.float16,
+            torch.bfloat16,
+            torch.float,
+            torch.float32,
+            torch.float64,
+        ]:
             tensor = (tensor * 255).to(torch.uint8)
         elif tensor.dtype in [torch.uint16]:
             tensor = (tensor.to(torch.float32) / 65535 * 255).to(torch.uint8)

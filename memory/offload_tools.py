@@ -61,7 +61,7 @@ def flush_memory():
 @test_time(GlobalValues.ENABLE_PER)
 def malloc_pin_memory(module: torch.nn.Module, ref_device=None):
     if ref_device is not None:
-        module.to(ref_device)
+        module = module.to(ref_device)
 
     for module_name, sub_module in module.named_modules():
         if hasattr(sub_module, "pin_param"):
