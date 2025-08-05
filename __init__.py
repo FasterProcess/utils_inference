@@ -1,1 +1,1 @@
-from .global_values import GlobalValues
+from .common.global_values import GlobalValues

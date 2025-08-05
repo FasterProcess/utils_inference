@@ -2,7 +2,6 @@ import os
 import numpy as np
 import torch
 from torchvision import transforms
-from PIL import Image
 
 
 class TensorSaveImage:

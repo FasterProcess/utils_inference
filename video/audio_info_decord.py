@@ -2,12 +2,11 @@ import os
 import decord
 from typing import List
 from .audio_data import AudioData
-from .time_bench import test_time
-from .global_values import GlobalValues
 import torch
+from .audio_info import AudioInfo
 
 
-class AudioInfo:
+class AudioInfoDecord(AudioInfo):
     def __init__(self, file_path=None, target_sample_rate=None):
         self.file_path = file_path
 
@@ -65,6 +64,14 @@ class AudioInfo:
     def load_data_by_index(
         self, indexs: List[int] = [], device=decord.cpu(0), sample_rate=1.0
     ) -> AudioData:
+        device_str, device_id = self.read_device(device)
+        if device_str == "cpu":
+            device = decord.cpu(device_id)
+        else:
+            raise Exception(
+                f"AudioInfoDecord device only support cpu, {device_str} is given"
+            )
+
         indexs = [index for index in indexs if (index >= 0 and index < self.length)]
         if len(indexs) < 1:
             return None
@@ -80,39 +87,3 @@ class AudioInfo:
             sample_rate=self.sample_rate / sample_rate,
             tag=indexs,
         )
-
-    # @test_time(enable=GlobalValues.ENABLE_PER)
-    @torch.no_grad()
-    def load_data(
-        self, offset=0, max_num_frame=-1, sample_rate=1, device=decord.cpu(0)
-    ):
-        if max_num_frame < 0:
-            max_num_frame = self.length
-
-        indexs = range(
-            offset,
-            min(int(offset + sample_rate * max_num_frame), self.length),
-            sample_rate,
-        )[:max_num_frame]
-
-        return self.load_data_by_index(
-            list(indexs), device=device, sample_rate=sample_rate
-        )
-
-    @property
-    def length(self):
-        return len(self)
-
-    @property
-    def ori_length(self):
-        return self.ori_length_per_channel
-
-    def __len__(self):
-        return self.length_per_channel
-
-    def __str__(self):
-        return f"file_path: {self.file_path}, duration: {self.duration}s, channel: {self.channel}, length_per_channel: {self.length_per_channel}, sample_rate: {self.sample_rate}, ori_sample_rate: {self.ori_sample_rate}, ori_length_per_channel: {self.ori_length_per_channel}"
-
-    @property
-    def valid(self):
-        return self.length > 0
