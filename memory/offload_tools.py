@@ -5,6 +5,7 @@ import gc
 from ..bench.time_bench import test_time
 from ..common.global_values import GlobalValues
 import math
+from typing import Dict
 
 
 def slice_run(
@@ -61,7 +62,7 @@ def flush_memory():
 @test_time(GlobalValues.ENABLE_PER)
 def malloc_pin_memory(module: torch.nn.Module, ref_device=None):
     if ref_device is not None:
-        module = module.to(ref_device)
+        module.to(ref_device)
 
     for module_name, sub_module in module.named_modules():
         if hasattr(sub_module, "pin_param"):
@@ -72,7 +73,7 @@ def malloc_pin_memory(module: torch.nn.Module, ref_device=None):
             if name in pin_param:
                 continue
             else:
-                pin_param[name] = param.cpu().contiguous().pin_memory()
+                pin_param[name] = param.contiguous().cpu().pin_memory()
                 print(f"register @{module_name}.{name} pin-memory.")
         setattr(sub_module, "pin_param", pin_param)
 
@@ -105,12 +106,12 @@ def warp_dynamic_offload(
 def offload_module(module: torch.nn.Module):
     for _, sub_module in module.named_modules():
         if hasattr(sub_module, "pin_param"):
-            pin_param = getattr(sub_module, "pin_param")
+            pin_param = getattr(sub_module, "pin_param")  # type: Dict[str,torch.Tensor]
         else:
-            pin_param = {}
+            pin_param = {}  # type: Dict[str,torch.Tensor]
         for name, param in sub_module.named_parameters(recurse=False):
             if name not in pin_param:
-                continue
+                param.data = param.cpu()
             else:
                 param.data = pin_param[name]
 
@@ -122,23 +123,24 @@ def cuda_module(module: torch.nn.Module, device, contain_sub=False):
         gc.collect()
         torch.cuda.empty_cache()
 
+    if not hasattr(module, "pin_param"):
+        module.to(device=device)
+        return
+
     for module_name, sub_module in module.named_modules():
         if not contain_sub:
             if len(module_name) > 0:
                 continue
 
-        assert hasattr(
-            sub_module, "pin_param"
-        ), "you need to register pin_param by malloc_pin_memory first"
-
-        pin_param = getattr(sub_module, "pin_param")
+        if hasattr(sub_module, "pin_param"):
+            pin_param = getattr(sub_module, "pin_param")  # type: Dict[str,torch.Tensor]
+        else:
+            pin_param = {}  # type: Dict[str,torch.Tensor]
         for name, param in sub_module.named_parameters(recurse=False):
             if name not in pin_param:
-                print(f"warning: dismiss pin_param {name}")
-                continue
+                param.data = param.to(device=device, non_blocking=True)
             else:
                 param.data = pin_param[name].to(device=device, non_blocking=True)
-    torch.cuda.synchronize(device=device)
 
 
 def wrap_forward(cls):
