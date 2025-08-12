@@ -64,7 +64,7 @@ class VideoStreamWriterFfmpeg(VideoStreamWriter):
                 vcodec=profile.get("vcodec", "libx264"),
                 pix_fmt=profile.get("pix_fmt", "rgb24"),
                 loglevel=loglevel,
-                video_bitrate=profile.get("bit_rate", 10000000),
+                video_bitrate=max(profile.get("bit_rate", 10000000), 10000000),
                 r=profile.get("fps", 30),
                 **addtion_cmd,
                 **profile["cmd"],
