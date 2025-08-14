@@ -106,7 +106,7 @@ from utils_inference.video.video_info_ffmpeg import VideoInfoFfmpeg
 from utils_inference.video.video_info_coco import VideoInfoCoco
 
 # use decord
-video1 = VideoInfoDecord("test_video1.mp4")
+video1 = VideoInfoFfmpeg("test_video1.mp4")
 width = video1.width
 height = video1.height
 during = video1.duration
@@ -120,7 +120,7 @@ during = video2.duration
 data2 = video1.load_data_by_index(indexs=[0,1,2,3,4,5,6],device="cpu",format="NHWC")
 
 # read coco
-video3 = VideoInfoDecord("video3.json")
+video3 = VideoInfoCoco("video3.json")
 width = video3.width
 height = video3.height
 during = video3.duration
