@@ -106,14 +106,14 @@ from utils_inference.video.video_info_ffmpeg import VideoInfoFfmpeg
 from utils_inference.video.video_info_coco import VideoInfoCoco
 
 # use decord
-video1 = VideoInfoFfmpeg("test_video1.mp4")
+video1 = VideoInfoDecord("test_video1.mp4")
 width = video1.width
 height = video1.height
 during = video1.duration
 data1 = video1.load_data_by_index(indexs=[0,1,3,5,6],device="cuda",format="NCHW")
 
 # use ffmpeg
-video2 = VideoInfoDecord("test_video2.mp4")
+video2 = VideoInfoFfmpeg("test_video2.mp4")
 width = video2.width
 height = video2.height
 during = video2.duration
