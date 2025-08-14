@@ -113,14 +113,14 @@ during = video1.duration
 data1 = video1.load_data_by_index(indexs=[0,1,3,5,6],device="cuda",format="NCHW")
 
 # use ffmpeg
-video2 = VideoInfoDecord("test_video2.mp4")
+video2 = VideoInfoFfmpeg("test_video2.mp4")
 width = video2.width
 height = video2.height
 during = video2.duration
 data2 = video1.load_data_by_index(indexs=[0,1,2,3,4,5,6],device="cpu",format="NHWC")
 
 # read coco
-video3 = VideoInfoDecord("video3.json")
+video3 = VideoInfoCoco("video3.json")
 width = video3.width
 height = video3.height
 during = video3.duration
